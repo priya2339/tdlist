@@ -1,4 +1,5 @@
 
+
 document.addEventListener('DOMContentLoaded', function() {
     const input = document.querySelector('.input');
     const addButton = document.querySelector('.button');
@@ -21,16 +22,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     todoList.addEventListener('click', function(event) {
+        const listItem = event.target.parentElement;
+
         if (event.target.classList.contains('delete-button')) {
-            const listItem = event.target.parentElement;
             removeTodoFromLocalStorage(listItem);
             listItem.remove();
         }
 
         if (event.target.classList.contains('checkbox')) {
-            const listItem = event.target.parentElement;
             listItem.classList.toggle('checked');
             toggleTodoCheckedInLocalStorage(listItem);
+        }
+
+        if (event.target.classList.contains('edit-button')) {
+            const span = listItem.querySelector('span');
+            const newText = prompt('Edit your task:', span.textContent);
+            if (newText !== null && newText.trim() !== '') {
+                updateTodoInLocalStorage(listItem, newText.trim());
+                span.textContent = newText.trim();
+            }
         }
     });
 
@@ -45,8 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const listItem = document.createElement('li');
         listItem.innerHTML = `
-            <input type="radio" class="checkbox" ${checked ? 'checked' : ''}>
+            <input type="checkbox" class="checkbox" ${checked ? 'checked' : ''}>
             <span>${text}</span>
+            <button class="edit-button">Edit</button>
             <button class="delete-button">Delete</button>
         `;
         if (checked) listItem.classList.add('checked');
@@ -76,6 +87,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         if (todo) {
             todo.checked = !todo.checked;
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+    }
+
+    function updateTodoInLocalStorage(listItem, newText) {
+        const todos = JSON.parse(localStorage.getItem('todos')) || [];
+        const text = listItem.querySelector('span').textContent;
+        const todo = todos.find(function(todo) {
+            return todo.text === text;
+        });
+        if (todo) {
+            todo.text = newText;
             localStorage.setItem('todos', JSON.stringify(todos));
         }
     }
